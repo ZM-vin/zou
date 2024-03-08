@@ -1,17 +1,18 @@
 <script lang="ts" setup>
 import { ref } from 'vue'
-import { userShow } from '@/api/user'
+import { userPhotoShow } from '@/api/user'
 import router from '@/router'
 const write = () => {
     router.push('/article')
 }
-const imgText = ref()
+
+//头像
+const imgText = ref('')
 const show = async () => {
-    const res = await userShow()
+    const res = await userPhotoShow()
     console.log(res.data)
-    imgText.value = res.data
-    const name = imgText.value.name
-    console.log(name)
+    imgText.value = res.data.avatar
+    console.log(imgText.value)
 }
 show()
 </script>
@@ -47,7 +48,7 @@ show()
                     <el-sub-menu index="/user">
                         <template #title>
                             <div class="demo-type">
-                                <el-avatar src="imgText.data.avatar"></el-avatar>
+                                <el-avatar :src="imgText"></el-avatar>
                             </div>
                         </template>
                         <el-menu-item index="/user">我的主页</el-menu-item>

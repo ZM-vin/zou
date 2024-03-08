@@ -2,23 +2,19 @@
 import { Pointer,Comment, Clock, View } from '@element-plus/icons-vue'
 import { ref } from 'vue'
 import { useRoute } from 'vue-router'
-import {articleDetailShow} from '@/api/article.js'
-//import {onMounted} from 'vue'
-
+import {myArticleShow} from '@/api/user.js'
 
 import MarkdownIt from "markdown-it"
 
 import { userIdShow } from '@/api/user'
 import { userPhotoShow } from '@/api/user'
 import { userNameShow } from '@/api/user'
-import { likeArticleAdd } from '@/api/user'
-import { userLikesArticleId } from '@/api/user'
-import { addLikesArticleId,likeArticleDel,likeArticleIdDel } from '@/api/user'
+
+import { userLikesArticleId,addLikesArticleId,likeArticleAdd,likeArticleDel,likeArticleIdDel } from '@/api/user'
 
 import emoji from '@/assets/emoji/emoji'
 import { reactive } from 'vue'
 import { CommentApi, ConfigApi, SubmitParamApi, UToast, createObjectURL, dayjs } from 'undraw-ui'
-
 
 //点击评论跳转到对应位置
 const jump = (domId) => {
@@ -47,11 +43,8 @@ const jump = (domId) => {
 
 const markdown = new MarkdownIt()
 
-
-
 const article = ref({})
 
-//获取文章信息
 const route = useRoute()
 const id = route.query.id
 const title = ref('')
@@ -62,9 +55,9 @@ const views = ref()
 const readtime = ref()
 const articleComment = ref([])
 const articleShow = async (id) => {
-    const res = await articleDetailShow(id)
-    article.value=res.data[0]
-    console.log(article.value)
+    const res = await myArticleShow(id)
+    article.value = res.data[0]
+    console.log(res.data[0])
     content.value = res.data[0].content
     title.value = res.data[0].title
     author.value = res.data[0].author
@@ -72,37 +65,33 @@ const articleShow = async (id) => {
     views.value = res.data[0].views
     readtime.value = res.data[0].readtime
     articleComment.value = res.data[0].comment
-    //console.log(articleComment.value)
+    console.log(articleComment.value)
     config.comments= res.data[0].comment
 }
 articleShow(id)
 
-//获取头像
 const userId = ref()
 const userName = ref('')
 const userAvatar = ref('')
 const photoshow = async () => {
     const res = await userPhotoShow()
-    //console.log(res.data)
     userAvatar.value = res.data.avatar
-    //console.log(userAvatar.value)
-}
+}//头像
 photoshow()
 
-//获取用户名
 const nameShow = async () => {
     const res = await userNameShow()
     userName.value = res.data.name
 }
 nameShow()
 
-//获取id
 const idShow = async () => {
     const res = await userIdShow()
     userId.value = res.data.id
 }
 idShow()
 
+//!!点赞按钮
 //判断点赞按钮是否需要高亮
 const light = () => {
         likesId.value.forEach(item => {
@@ -162,8 +151,6 @@ const addLike = async () => {
 
 
 
-
-//评论区
 const config = reactive<ConfigApi>({
     user: {
         id: userId,
@@ -213,6 +200,7 @@ const like = (id: string, finish: () => void) => {
 
 
 
+
 const text = ref('')
 </script>
 
@@ -222,9 +210,9 @@ const text = ref('')
             <!--点赞评论-->
             <el-col :span="2" :offset="1">
                 <div class="content" style="display:flex;flex-direction:column">
-                        <div><el-button v-show="turnup" :icon="Pointer" circle size="large" @click="addLike()" type="primary"/></div>
-                        <div><el-button v-show="!turnup" :icon="Pointer" circle size="large" @click="addLike()"/></div>
-                        <div style="margin-top: 10px"><el-button :icon="Comment" circle size="large" @click="jump('here')"/></div>
+                    <div><el-button v-show="turnup" :icon="Pointer" circle size="large" @click="addLike()" type="primary"/></div>
+                    <div><el-button v-show="!turnup" :icon="Pointer" circle size="large" @click="addLike()"/></div>
+                    <div style="margin-top: 10px"><el-button :icon="Comment" circle size="large" @click="jump('here')"/></div>
                 </div>
             </el-col>
 
@@ -246,7 +234,7 @@ const text = ref('')
                 </div>
 
                 <!--评论-->
-                  <u-comment :config="config" upload @submit="submit" @like="like" relative-time id="here"></u-comment>
+                  <u-comment :config="config" upload @submit="submit" @like="like" relative-time></u-comment>
             </el-col>
         </el-row>
     </div>

@@ -1,10 +1,14 @@
 <script setup>
-import {ref} from 'vue'
+import {ref,computed} from 'vue'
 import { Compass, List, ArrowRight,View, Pointer } from '@element-plus/icons-vue'
 import { articleShow } from '@/api/article.js'
 import { useRouter } from 'vue-router'
 
+import { userLikesArticleId } from '@/api/user'
+///import {addLikesArticleId,likeArticleAdd,likeArticleDel,likeArticleIdDel } from '@/api/user'
  const router = useRouter()
+
+
 
 const articleList = ref([])
 const show = async () => {
@@ -15,6 +19,11 @@ const show = async () => {
 }
 show()
 
+
+//文章榜
+const newArticleList = ref(articleList)
+const sortedItems = computed(() => newArticleList.value.slice().sort((a, b) => b.views - a.views))
+console.log(newArticleList.value)
 const ellipsis = (content) => {
     if (content.length > 10)
     {
@@ -22,13 +31,93 @@ const ellipsis = (content) => {
     }
     return content
 }
-const tt = '这才开工没几天收到Offer了，简历改的好，找工作没烦恼。'
 const save = (titlt) => {
     if (titlt.length > 10) {
         return titlt.slice(0, 10) + '...'
     }
     return titlt
 }
+
+
+//const article = ref({})
+//!!点赞按钮
+//const turnup=ref(false)//判断是否高亮
+//获取已点赞文章的id
+const likesId = ref([])
+const likesIdShow = async (id) => {
+    const res = await userLikesArticleId()
+    const abc = ref(true)
+    const def = ref('')
+    likesId.value = res.data.data
+    console.log(likesId.value)
+    for (let i = 0; i < likesId.value.length; i++) {
+        if (likesId[i] === id) {
+            //turnup.value = true
+            abc.value = false
+            def.value = 'primary'
+            console.log(true)
+            return def
+        }
+    }
+    if (abc.value)
+    {
+        def.value = 'info'
+        console.log(false)
+        return def
+    }
+}
+    
+//likesIdShow()
+
+//判断点赞按钮是否需要高亮
+/*const light = (id) => {
+        //turnup.value = false
+        likesId.value.forEach(item => {
+        if (item === id)
+        {
+            //turnup.value = true
+            console.log(true)
+            return true
+            }
+        })
+    console.log(false)
+    return false
+}*/
+
+
+
+/*//添加点赞文章的id
+const likesIdAdd = async () => {
+    await addLikesArticleId(likesId.value)
+}
+
+//点赞文章
+const add=ref(true)//判断已点赞否
+const addLike = async (id,i) => {
+    likesId.value.forEach(item => {
+        if (item === id)
+        {
+            add.value=false
+        }
+    })
+    if (add.value) {//添加点赞文章的id及文章内容
+        //console.log(turnup)
+        turnup.value = true
+        article.value=articleList.value[i]
+        await likeArticleAdd(article.value)
+        likesId.value.push(id)
+        likesIdAdd()
+    }
+    else {////删除点赞文章的id及文章内容
+        const back = await likeArticleDel(id)
+        console.log(back)
+        likesId.value = likesId.value.filter(item => item!==id)
+        const result = await likeArticleIdDel(likesId.value)
+        turnup.value = false
+        console.log(result.data)
+    }
+}*/
+
 </script>
 <template>
     <div class="all">
@@ -67,7 +156,7 @@ const save = (titlt) => {
                         </el-menu>
                     </div>
                     <ul>
-                        <li v-for="item in articleList" :key="item.id" @click="router.push({path:'/article/detail',query:{id:item.id}})">
+                        <li style="cursor:pointer" v-for="(item,index) in articleList" :key="item.id" @click="router.push({path:'/article/detail',query:{id:item.id}})">
                             <div >
                                  <el-row :gutter="20">
                                     <el-col :span="19">
@@ -77,11 +166,13 @@ const save = (titlt) => {
                                                 <div style="font-size: smaller;color: #999fab;padding-bottom: 5px;">
                                                     {{ ellipsis(item.content) }}
                                                 </div>
-                                                <div style="font-size: smaller;color: #999fab;"><span>{{ item.author }}</span><el-divider direction="vertical" /><span><el-icon><View /></el-icon>&nbsp;{{item.views}}</span>&nbsp;&nbsp;&nbsp;<span><el-icon><Pointer /></el-icon>&nbsp;{{ item.likes }}</span></div>
+                                                <div style="font-size: smaller;color: #999fab;"><span>{{ item.author }}</span><el-divider direction="vertical" /><span><el-icon><View /></el-icon>&nbsp;{{item.views}}</span>&nbsp;&nbsp;&nbsp;
+                                                    <span><el-button  @click="addLike(item.id,index)" :icon="Pointer" :type=likesIdShow() link>&nbsp;{{ item.likes }}</el-button></span>
+                                                </div>
                                             </div>
                                         </div>
                                     </el-col>
-                                    <el-col :span="5"><div class="grid-content ep-bg-purple" />
+                                    <el-col :span="5" v-if="item.pic"><div class="grid-content ep-bg-purple" />
                                         <el-image style="width: 108px; height: 72px;margin-top: 10px;" :src="item.pic" :fit="fit" />
                                     </el-col>
                                 </el-row> 
@@ -99,27 +190,27 @@ const save = (titlt) => {
                         <span>文章榜</span>
                         <el-divider />
                         <ul>
-                            <li>
-                                <span style="color:#f85f5f">1</span>&nbsp;&nbsp;&nbsp;
-                                <span style="font-size: small" :title="tt"><a>{{ save(tt) }}</a></span>
+                            <li v-for="(item,index) in sortedItems" :key="item.id" style="cursor:pointer" @click="router.push({path:'/article/detail',query:{id:item.id}})">
+                                <span style="color:#f85f5f">{{ index+1 }}</span>&nbsp;&nbsp;&nbsp;
+                                <span style="font-size: small" :title="item.title"><a>{{ save(item.title) }}</a></span>
                             </li>
-                            <li>
+                            <!--<li>
                                 <span style="color:#fd9961">2</span>&nbsp;&nbsp;&nbsp;
-                                <span style="font-size: small" :title="tt"><a>{{ save(tt) }}</a></span>
+                                <span style="font-size: small" :title="sortedItems[1].title"><a>{{ save(sortedItems[1].title) }}</a></span>
                             </li>
                             <li>
                                 <span style="color:#ffbb3a">3</span>&nbsp;&nbsp;&nbsp;
-                                <span style="font-size: small" :title="tt"><a>{{ save(tt) }}</a></span>
+                                <span style="font-size: small" :title="newArticleList[2].title"><a>{{ save(newArticleList[2].title) }}</a></span>
                             </li>
                             <li>
                                 <span style="color:#8a919f">4</span>&nbsp;&nbsp;&nbsp;
-                                <span style="font-size: small" :title="tt"><a>{{ save(tt) }}</a></span>
+                                <span style="font-size: small" :title="newArticleList[3].title"><a>{{ save(newArticleList[3].title) }}</a></span>
                             </li>
                             <li>
                                 <span style="color:#8a919f">5</span>&nbsp;&nbsp;&nbsp;
-                                <span style="font-size: small" :title="tt"><a>{{ save(tt) }}</a></span>
+                                <span style="font-size: small" :title="newArticleList[4].title"><a>{{ save(newArticleList[4].title) }}</a></span>
                                 
-                            </li>
+                            </li>-->
                         </ul>
                         <el-divider />
                     </div>

@@ -11,3 +11,4 @@ export const articleDetailShow = (id) => {
         params: {id}
     })
 }
+

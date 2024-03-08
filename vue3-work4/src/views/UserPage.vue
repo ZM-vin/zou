@@ -1,7 +1,27 @@
 <script setup>
-import imgText from '@/assets/picture.jpg'
-import router from '@/router';
-const count = 2
+import {ref} from 'vue'
+import router from '@/router'
+import { userPhotoShow } from '@/api/user'
+import { userLikesArticleId } from '@/api/user'
+
+//获取头像
+const imgText = ref('')
+const show = async () => {
+    const res = await userPhotoShow()
+    imgText.value = res.data.avatar
+}
+show()
+
+//获取已点赞文章的id
+const likesId = ref([])
+const likesIdShow = async () => {
+    const res = await userLikesArticleId()
+    likesId.value = res.data.data
+    console.log(likesId.value)
+}
+likesIdShow()
+
+
 const setting = () => {
     router.push('/user/settinguser')
 }
@@ -28,7 +48,7 @@ const setting = () => {
                             router
                         >
                             <el-menu-item index="/user/myarticle">文章</el-menu-item>
-                            <el-menu-item index="/user/mylike">赞{{ count }}</el-menu-item>
+                            <el-menu-item index="/user/mylike">赞{{ likesId.length }}</el-menu-item>
                         </el-menu>
                         <router-view></router-view>
                     </div>    

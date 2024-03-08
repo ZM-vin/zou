@@ -1,12 +1,32 @@
-<script setup>
+<script lang="ts" setup>
 import {ref, reactive } from 'vue'
 import { Plus } from '@element-plus/icons-vue'
-import imgText from '@/assets/picture.jpg'
-const imageUrl = ref(imgText)
+import { userPhotoShow } from '@/api/user'
+import { userNameShow } from '@/api/user'
+import { userNameChange } from '@/api/user'
+import type { UploadProps } from 'element-plus'
+
+//展示头像
+const imageUrl =ref('')
+const photoShow = async () => {
+    const res = await userPhotoShow()
+    imageUrl.value = res.data.avatar
+    console.log(imageUrl.value)
+}
+photoShow()
+
+//展示用户名
+const username = ref('')
+const nameShow = async () => {
+    const res = await userNameShow()
+    username.value = res.data.name
+}
+nameShow()
+
 const ruleFormRef = ref()
 const ruleForm = reactive(
     {
-        name:'hhh'
+        name: username
     }
 )
 const rules = {
@@ -14,6 +34,21 @@ const rules = {
         { required: true, message: '用户名不能为空', trigger: 'change' },
         { pattern: /^.{0,20}$/, message: '用户名长度不大于20位', trigger: 'change' }
     ]
+}
+
+//提交修改
+const remain = async () => {
+    const res = await userNameChange(ruleForm.name)
+    console.log(res.data)
+    photoShow()
+    nameShow()
+}
+
+const handleAvatarSuccess: UploadProps['onSuccess'] = (
+  response,
+  uploadFile
+) => {
+  imageUrl.value = URL.createObjectURL(uploadFile.raw!)
 }
 
 </script>
@@ -53,7 +88,6 @@ const rules = {
                                 action="https://run.mocky.io/v3/9d059bf9-4660-45f2-925d-ce80ad6c4d15"
                                 :show-file-list="false"
                                 :on-success="handleAvatarSuccess"
-                                :before-upload="beforeAvatarUpload"
                             >
                                 <el-avatar v-if="imageUrl" :src="imageUrl" :size="150"/>
                                 <el-icon v-else class="avatar-uploader-icon"><Plus /></el-icon>
@@ -64,6 +98,7 @@ const rules = {
                     </div>
                 </el-col>
             </el-row>
+            <el-button type="primary" style="margin-top: 100px;" @click="remain">保存修改</el-button>
         </el-main>
     </el-container>
 </template>

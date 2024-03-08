@@ -45,6 +45,14 @@ const router = createRouter({
         {
           path: '/article/detail',
           component: () => import('@/views/ArticleDetail.vue')
+        },
+        {
+          path: '/myarticle/detail',
+          component: () => import('@/views/MyArticleDetail.vue')
+        },
+        {
+          path: '/mylikesarticle/detail',
+          component: () => import('@/views/MyLikeDetail.vue')
         }
       ]
     },
